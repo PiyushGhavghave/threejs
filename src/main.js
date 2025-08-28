@@ -26,16 +26,20 @@ const torus = new THREE.Mesh(geometry, material);
 scene.add(torus);
 
 // add light in scene
+/*
 const pointLight  = new THREE.PointLight(0xFFFFFF);
 pointLight.position.set(0,0,10);
 scene.add(pointLight);
+*/
 
 const ambientLight = new THREE.AmbientLight(0xFFFFFF);
 scene.add(ambientLight);
 
 //add helper
+/*
 const lightHelper = new THREE.PointLightHelper(pointLight);
 scene.add(lightHelper);
+*/
 
 // add orbit controls
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -53,7 +57,7 @@ function addStars(){
 Array(200).fill().forEach(addStars);
 
 // add image (space)
-const spaceTexture = new THREE.TextureLoader().load('../public/space.jpg');
+const spaceTexture = new THREE.TextureLoader().load('/space.jpg');
 scene.background = spaceTexture;
 
 function animate() {
