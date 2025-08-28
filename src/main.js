@@ -5,7 +5,9 @@ import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 // -- Scene Setup --
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 100;
+
+// MODIFICATION: Adjust camera position based on screen size
+camera.position.z = window.innerWidth < 768 ? 120 : 100;
 
 const renderer = new THREE.WebGLRenderer({
   canvas: document.querySelector('#bg'),
@@ -13,12 +15,21 @@ const renderer = new THREE.WebGLRenderer({
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
 
-// -- Mouse Interaction --
-const mouse = new THREE.Vector2();
-window.addEventListener('mousemove', (event) => {
-  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-});
+// -- Mouse & Touch Interaction --
+const mouse = new THREE.Vector2(-100, -100); // Initialize off-screen
+
+// NEW: A single function to handle both mouse and touch events
+function updateMousePosition(event) {
+  const eventX = event.touches ? event.touches[0].clientX : event.clientX;
+  const eventY = event.touches ? event.touches[0].clientY : event.clientY;
+  mouse.x = (eventX / window.innerWidth) * 2 - 1;
+  mouse.y = -(eventY / window.innerHeight) * 2 + 1;
+}
+
+window.addEventListener('mousemove', updateMousePosition);
+window.addEventListener('touchmove', updateMousePosition, { passive: false });
+window.addEventListener('touchstart', updateMousePosition, { passive: false });
+
 
 // -- Particle Variables --
 let points;
@@ -31,14 +42,15 @@ const friction = 0.95;
 // -- Font Loading and Text Creation --
 const fontLoader = new FontLoader();
 fontLoader.load('/fonts/helvetiker_regular.typeface.json', (font) => {
-  const FONT_SIZE = 40;
+  // MODIFICATION: Adjust font size based on screen width
+  const FONT_SIZE = window.innerWidth < 768 ? 25 : 40;
   const TARGET_PARTICLES = 15000;
   const particlePositions = [];
 
   // Step 1: Generate 2D shapes for the text
   const shapes = font.generateShapes('Matlync', FONT_SIZE);
   const geometry = new THREE.ShapeGeometry(shapes);
-  geometry.center(); // Center the text geometry
+  geometry.center();
 
   // Step 2: Triangulate the shapes and prepare for sampling
   const triangles = [];
@@ -57,7 +69,6 @@ fontLoader.load('/fonts/helvetiker_regular.typeface.json', (font) => {
 
   // Step 3: Sample random points from the triangles
   for (let i = 0; i < TARGET_PARTICLES; i++) {
-    // Pick a random triangle weighted by its area
     let randomArea = Math.random() * totalArea;
     let selectedTriangle;
     for (const triangle of triangles) {
@@ -68,7 +79,6 @@ fontLoader.load('/fonts/helvetiker_regular.typeface.json', (font) => {
       }
     }
 
-    // Generate a random point inside the selected triangle using barycentric coordinates
     let r1 = Math.sqrt(Math.random());
     let r2 = Math.random();
     const x = (1 - r1) * selectedTriangle.a.x + (r1 * (1 - r2)) * selectedTriangle.b.x + (r1 * r2) * selectedTriangle.c.x;
@@ -155,8 +165,12 @@ function animate() {
 animate();
 
 // -- Handle window resize --
+// The existing resize handler is already responsive!
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  
+  // Optional: You could reload the text on resize for a more drastic change,
+  // but the current setup should scale visually without a reload.
 });
