@@ -56,7 +56,7 @@ function createText(font) {
     const TARGET_PARTICLES = 15000;
     const particlePositions = [];
 
-    const shapes = font.generateShapes('Piyush', FONT_SIZE);
+    const shapes = font.generateShapes('Matlync', FONT_SIZE);
     const geometry = new THREE.ShapeGeometry(shapes);
     geometry.center();
     geometry.computeBoundingBox();
